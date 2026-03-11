@@ -52,9 +52,13 @@ A simplified EasyClaw implementation - An easy-mode runtime and UI layer for Ope
 - **@myclaw/llm-providers** - Multi-provider LLM support with routing (42 tests)
 
 ### Desktop App
-- **@myclaw/desktop** - Electron desktop application (18 tests)
+- **@myclaw/desktop** - Electron desktop application (32 tests)
+  - System tray integration
+  - Local HTTP server (port 3210)
+  - Gateway lifecycle control
+  - Real-time status monitoring
 
-**Total: 276 tests passing ✅**
+**Total: 290 tests passing ✅**
 
 ## Status
 
