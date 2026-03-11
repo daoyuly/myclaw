@@ -1,0 +1,40 @@
+{
+  "name": "@myclaw/desktop",
+  "version": "0.1.0",
+  "description": "MyClaw Desktop Application",
+  "main": "./out/main/index.js",
+  "author": "MyClaw Team",
+  "license": "MIT",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "start": "electron-vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@myclaw/env-manager": "workspace:*",
+    "@myclaw/gateway": "workspace:*",
+    "@myclaw/logger": "workspace:*",
+    "@myclaw/storage": "workspace:*",
+    "electron-updater": "^6.1.7",
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "@electron-toolkit/preload": "^3.0.1",
+    "@electron-toolkit/utils": "^3.0.0",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.11.0",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.4",
+    "electron": "^35.0.0",
+    "electron-vite": "^2.3.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "typescript": "^5.3.3",
+    "vite": "^5.4.21",
+    "vitest": "^3.0.0"
+  }
+}

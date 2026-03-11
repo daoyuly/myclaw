@@ -1,0 +1,25 @@
+{
+  "name": "myclaw-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MyClaw - A simplified EasyClaw implementation",
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "test": "turbo test",
+    "lint": "turbo lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "clean": "turbo clean && rm -rf node_modules",
+    "prepare": "husky install || true"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "prettier": "^3.2.5",
+    "turbo": "^2.3.0",
+    "typescript": "^5.3.3"
+  },
+  "packageManager": "pnpm@10.6.2",
+  "engines": {
+    "node": ">=24.0.0"
+  }
+}

@@ -1,0 +1,32 @@
+{
+  "name": "@myclaw/storage",
+  "version": "0.1.0",
+  "description": "MyClaw SQLite storage",
+  "main": "./dist/index.mjs",
+  "types": "./dist/index.d.mts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.mts"
+    }
+  },
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean",
+    "dev": "tsup src/index.ts --format esm --dts --watch",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "clean": "rm -rf dist coverage"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.0.0",
+    "@myclaw/core": "workspace:*",
+    "@myclaw/logger": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.9",
+    "@types/node": "^20.11.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.3.3",
+    "vitest": "^1.2.0"
+  }
+}
