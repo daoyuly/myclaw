@@ -11,7 +11,13 @@
     "preview": "electron-vite preview",
     "start": "electron-vite preview",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "postinstall": "electron-builder install-app-deps",
+    "build:unpack": "pnpm build && electron-builder --dir",
+    "build:win": "pnpm build && electron-builder --win",
+    "build:mac": "pnpm build && electron-builder --mac",
+    "build:linux": "pnpm build && electron-builder --linux",
+    "build:all": "pnpm build && electron-builder --win --mac --linux"
   },
   "dependencies": {
     "@myclaw/env-manager": "workspace:*",
@@ -30,6 +36,7 @@
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^5.1.4",
     "electron": "^35.0.0",
+    "electron-builder": "^25.1.8",
     "electron-vite": "^2.3.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

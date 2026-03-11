@@ -17,9 +17,18 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getGatewayStatus: () => ipcRenderer.invoke('gateway:status'),
   getGatewayHealth: () => ipcRenderer.invoke('gateway:health'),
 
+  // Update control
+  checkForUpdates: () => ipcRenderer.invoke('update:check'),
+  downloadUpdate: () => ipcRenderer.invoke('update:download'),
+  installUpdate: () => ipcRenderer.invoke('update:install'),
+  getUpdateStatus: () => ipcRenderer.invoke('update:status'),
+
   // Events
   onGatewayStatus: (callback: (status: unknown) => void) => {
     ipcRenderer.on('gateway:status', (_event, status) => callback(status))
+  },
+  onUpdateStatus: (callback: (status: unknown) => void) => {
+    ipcRenderer.on('update:status', (_event, status) => callback(status))
   },
   onLog: (callback: (log: unknown) => void) => {
     ipcRenderer.on('log', (_event, log) => callback(log))

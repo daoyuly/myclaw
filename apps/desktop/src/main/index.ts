@@ -14,6 +14,14 @@ import {
   cleanupGateway,
   GatewayStatus
 } from './gateway'
+import {
+  initUpdater,
+  checkForUpdates,
+  downloadUpdate,
+  installUpdate,
+  getUpdateStatus,
+  UpdateStatus
+} from './updater'
 
 const logger = createLogger('desktop:main')
 
@@ -147,6 +155,42 @@ app.whenReady().then(async () => {
     return getGatewayHealth()
   })
 
+  // Update IPC handlers
+  ipcMain.handle('update:check', async () => {
+    try {
+      await checkForUpdates()
+      return { success: true }
+    } catch (error) {
+      logger.error('Failed to check for updates', error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error)
+      }
+    }
+  })
+
+  ipcMain.handle('update:download', async () => {
+    try {
+      await downloadUpdate()
+      return { success: true }
+    } catch (error) {
+      logger.error('Failed to download update', error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error)
+      }
+    }
+  })
+
+  ipcMain.handle('update:install', () => {
+    installUpdate()
+    return { success: true }
+  })
+
+  ipcMain.handle('update:status', (): UpdateStatus => {
+    return getUpdateStatus()
+  })
+
   // Create window
   await createWindow()
   logger.info('Window created')
@@ -154,6 +198,10 @@ app.whenReady().then(async () => {
   // Create tray
   createTray(mainWindow!)
   logger.info('Tray icon created')
+
+  // Initialize updater
+  initUpdater(mainWindow!)
+  logger.info('Updater initialized')
 
   // Initialize Gateway (don't auto-start)
   initGateway()

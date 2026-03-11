@@ -20,6 +20,21 @@ interface GatewayStatus {
   }
 }
 
+interface UpdateStatus {
+  checking: boolean
+  available: boolean
+  downloading: boolean
+  downloaded: boolean
+  progress: {
+    bytesPerSecond: number
+    percent: number
+    transferred: number
+    total: number
+  } | null
+  version: string | null
+  error: string | null
+}
+
 interface ElectronAPI {
   getAppStatus: () => Promise<AppStatus>
   showWindow: () => Promise<void>
@@ -29,6 +44,11 @@ interface ElectronAPI {
   restartGateway: () => Promise<{ success: boolean; error?: string }>
   getGatewayStatus: () => Promise<GatewayStatus>
   getGatewayHealth: () => Promise<GatewayStatus['health']>
+  checkForUpdates: () => Promise<{ success: boolean; error?: string }>
+  downloadUpdate: () => Promise<{ success: boolean; error?: string }>
+  installUpdate: () => Promise<{ success: boolean }>
+  getUpdateStatus: () => Promise<UpdateStatus>
+  onUpdateStatus: (callback: (status: UpdateStatus) => void) => void
 }
 
 declare global {
@@ -40,24 +60,34 @@ declare global {
 function App() {
   const [status, setStatus] = useState<AppStatus | null>(null)
   const [gatewayStatus, setGatewayStatus] = useState<GatewayStatus | null>(null)
+  const [updateStatus, setUpdateStatus] = useState<UpdateStatus | null>(null)
   const [loading, setLoading] = useState(true)
   const [gatewayLoading, setGatewayLoading] = useState(false)
+  const [updateLoading, setUpdateLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     loadStatus()
     const interval = setInterval(loadStatus, 5000)
+
+    // Listen for update status changes
+    window.electronAPI.onUpdateStatus((status) => {
+      setUpdateStatus(status)
+    })
+
     return () => clearInterval(interval)
   }, [])
 
   async function loadStatus() {
     try {
-      const [appData, gatewayData] = await Promise.all([
+      const [appData, gatewayData, updateData] = await Promise.all([
         window.electronAPI.getAppStatus(),
-        window.electronAPI.getGatewayStatus()
+        window.electronAPI.getGatewayStatus(),
+        window.electronAPI.getUpdateStatus()
       ])
       setStatus(appData)
       setGatewayStatus(gatewayData)
+      setUpdateStatus(updateData)
       setError(null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load status')
@@ -109,6 +139,38 @@ function App() {
     } finally {
       setGatewayLoading(false)
     }
+  }
+
+  async function handleCheckUpdates() {
+    setUpdateLoading(true)
+    try {
+      const result = await window.electronAPI.checkForUpdates()
+      if (!result.success) {
+        setError(result.error || 'Failed to check for updates')
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to check for updates')
+    } finally {
+      setUpdateLoading(false)
+    }
+  }
+
+  async function handleDownloadUpdate() {
+    setUpdateLoading(true)
+    try {
+      const result = await window.electronAPI.downloadUpdate()
+      if (!result.success) {
+        setError(result.error || 'Failed to download update')
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to download update')
+    } finally {
+      setUpdateLoading(false)
+    }
+  }
+
+  async function handleInstallUpdate() {
+    await window.electronAPI.installUpdate()
   }
 
   if (loading) {
@@ -233,6 +295,90 @@ function App() {
           </div>
         </section>
 
+        <section className="card">
+          <h2>软件更新</h2>
+          
+          {updateStatus?.error && (
+            <div className="error-message">
+              ⚠️ {updateStatus.error}
+            </div>
+          )}
+
+          {updateStatus?.checking && (
+            <div className="service-status">
+              <span className="status-dot starting"></span>
+              <span>检查更新中...</span>
+            </div>
+          )}
+
+          {updateStatus?.available && !updateStatus.downloaded && (
+            <div className="service-status">
+              <span className="status-dot active"></span>
+              <span>发现新版本 v{updateStatus.version}</span>
+            </div>
+          )}
+
+          {updateStatus?.downloading && updateStatus.progress && (
+            <div className="download-progress">
+              <span>下载中: {updateStatus.progress.percent.toFixed(1)}%</span>
+              <div className="progress-bar">
+                <div 
+                  className="progress-fill" 
+                  style={{ width: `${updateStatus.progress.percent}%` }}
+                ></div>
+              </div>
+              <span className="progress-speed">
+                {formatBytes(updateStatus.progress.bytesPerSecond)}/s
+              </span>
+            </div>
+          )}
+
+          {updateStatus?.downloaded && (
+            <div className="service-status">
+              <span className="status-dot active"></span>
+              <span>更新已就绪 v{updateStatus.version}</span>
+            </div>
+          )}
+
+          {!updateStatus?.checking && !updateStatus?.available && !updateStatus?.downloaded && (
+            <div className="service-status">
+              <span className="status-dot inactive"></span>
+              <span>已是最新版本</span>
+            </div>
+          )}
+
+          <div className="button-group">
+            {!updateStatus?.available && !updateStatus?.checking && (
+              <button
+                className="btn btn-secondary"
+                onClick={handleCheckUpdates}
+                disabled={updateLoading}
+              >
+                检查更新
+              </button>
+            )}
+
+            {updateStatus?.available && !updateStatus?.downloaded && !updateStatus?.downloading && (
+              <button
+                className="btn btn-primary"
+                onClick={handleDownloadUpdate}
+                disabled={updateLoading}
+              >
+                下载更新
+              </button>
+            )}
+
+            {updateStatus?.downloaded && (
+              <button
+                className="btn btn-primary"
+                onClick={handleInstallUpdate}
+              >
+                安装并重启
+              </button>
+            )}
+          </div>
+        </section>
+
         {error && (
           <section className="card error-card">
             <p>❌ {error}</p>
@@ -244,7 +390,7 @@ function App() {
       </main>
 
       <footer className="footer">
-        <p>MyClaw v0.1.0 • OpenClaw Runtime</p>
+        <p>MyClaw v{status?.version} • OpenClaw Runtime</p>
       </footer>
     </div>
   )
@@ -262,6 +408,12 @@ function formatUptime(seconds: number): string {
   } else {
     return `${secs}s`
   }
+}
+
+function formatBytes(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / 1024 / 1024).toFixed(1)} MB`
 }
 
 function getGatewayStatusText(status?: GatewayStatus['status']): string {
