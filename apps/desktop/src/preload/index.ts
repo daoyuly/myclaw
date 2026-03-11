@@ -13,6 +13,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   // Gateway control
   startGateway: () => ipcRenderer.invoke('gateway:start'),
   stopGateway: () => ipcRenderer.invoke('gateway:stop'),
+  restartGateway: () => ipcRenderer.invoke('gateway:restart'),
+  getGatewayStatus: () => ipcRenderer.invoke('gateway:status'),
   getGatewayHealth: () => ipcRenderer.invoke('gateway:health'),
 
   // Events

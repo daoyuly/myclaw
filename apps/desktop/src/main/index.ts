@@ -4,6 +4,16 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { createLogger } from '@myclaw/logger'
 import { createTray } from './tray'
 import { startServer, stopServer } from './server'
+import {
+  initGateway,
+  startGateway,
+  stopGateway,
+  restartGateway,
+  getGatewayStatus,
+  getGatewayHealth,
+  cleanupGateway,
+  GatewayStatus
+} from './gateway'
 
 const logger = createLogger('desktop:main')
 
@@ -89,6 +99,54 @@ app.whenReady().then(async () => {
     mainWindow?.hide()
   })
 
+  // Gateway IPC handlers
+  ipcMain.handle('gateway:start', async () => {
+    try {
+      await startGateway()
+      return { success: true }
+    } catch (error) {
+      logger.error('Failed to start gateway', error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error)
+      }
+    }
+  })
+
+  ipcMain.handle('gateway:stop', async () => {
+    try {
+      await stopGateway()
+      return { success: true }
+    } catch (error) {
+      logger.error('Failed to stop gateway', error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error)
+      }
+    }
+  })
+
+  ipcMain.handle('gateway:restart', async () => {
+    try {
+      await restartGateway()
+      return { success: true }
+    } catch (error) {
+      logger.error('Failed to restart gateway', error)
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : String(error)
+      }
+    }
+  })
+
+  ipcMain.handle('gateway:status', async (): Promise<GatewayStatus> => {
+    return getGatewayStatus()
+  })
+
+  ipcMain.handle('gateway:health', async () => {
+    return getGatewayHealth()
+  })
+
   // Create window
   await createWindow()
   logger.info('Window created')
@@ -96,6 +154,10 @@ app.whenReady().then(async () => {
   // Create tray
   createTray(mainWindow!)
   logger.info('Tray icon created')
+
+  // Initialize Gateway (don't auto-start)
+  initGateway()
+  logger.info('Gateway initialized')
 
   // Start local server
   await startServer()
@@ -120,6 +182,7 @@ app.on('window-all-closed', () => {
 // Clean up on quit
 app.on('before-quit', async () => {
   app.isQuitting = true
+  await cleanupGateway()
   await stopServer()
   logger.info('MyClaw Desktop shutting down...')
 })

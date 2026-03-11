@@ -1,5 +1,6 @@
 import express, { Express, Request, Response } from 'express'
 import { createLogger } from '@myclaw/logger'
+import { getGatewayStatus, getGatewayHealth } from './gateway'
 
 const logger = createLogger('desktop:server')
 
@@ -41,11 +42,19 @@ export async function startServer(): Promise<void> {
 
   // Gateway status endpoint
   app.get('/api/gateway', async (_req: Request, res: Response) => {
-    // TODO: Integrate with @myclaw/gateway
-    res.json({
-      status: 'not_implemented',
-      message: 'Gateway integration coming soon'
-    })
+    try {
+      const status = await getGatewayStatus()
+      const health = await getGatewayHealth()
+      res.json({
+        ...status,
+        health
+      })
+    } catch (error) {
+      res.status(500).json({
+        status: 'error',
+        error: error instanceof Error ? error.message : String(error)
+      })
+    }
   })
 
   return new Promise((resolve, reject) => {
