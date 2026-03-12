@@ -39,7 +39,7 @@ win:
         - x64
 
 linux:
-  icon: resources/icons
+  icon: resources
   category: Development
   target:
     - target: AppImage
@@ -63,7 +63,6 @@ nsis:
   shortcutName: MyClaw
 
 dmg:
-  background: resources/dmg-background.png
   iconSize: 100
   contents:
     - x: 380

@@ -13,6 +13,7 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "postinstall": "electron-builder install-app-deps",
+    "generate-icons": "node scripts/generate-icons.js && node scripts/generate-ico.js",
     "build:unpack": "pnpm build && electron-builder --dir",
     "build:win": "pnpm build && electron-builder --win",
     "build:mac": "pnpm build && electron-builder --mac",
@@ -38,8 +39,10 @@
     "electron": "^35.0.0",
     "electron-builder": "^25.1.8",
     "electron-vite": "^2.3.0",
+    "png-to-ico": "^3.0.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "sharp": "^0.34.5",
     "typescript": "^5.3.3",
     "vite": "^5.4.21",
     "vitest": "^3.0.0"

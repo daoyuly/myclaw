@@ -40,3 +40,6 @@ Thumbs.db
 
 # Test
 test-results
+
+# Electron release builds
+release
