@@ -1,0 +1,8 @@
+export { Dashboard } from './Dashboard'
+export { Chat } from './Chat'
+export { Rules } from './Rules'
+export { Providers } from './Providers'
+export { Channels } from './Channels'
+export { Permissions } from './Permissions'
+export { Stats } from './Stats'
+export { Settings } from './Settings'
